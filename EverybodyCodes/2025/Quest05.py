@@ -70,78 +70,52 @@ def main():
     p2 = max(swords) - min(swords)
 
     # Part three
-
-    test_cases = """
- 12 458: {'quality': 9199911763584, 'levels': [19, 16, 89, 19, 79, 12, 17, 479, 567, 136, 257, 38, 46]}
- 13  56: {'quality': 9199911763584, 'levels': [19, 16, 89, 19, 79, 12, 17, 479, 567, 136, 257, 38, 34]}
- 14 279: {'quality': 9199911763584, 'levels': [19, 16, 89, 19, 79, 12, 17, 479, 567, 136, 257, 38, 34]}
- 
- 19 206: {'quality': 8447433334444, 'levels': [189, 148, 247, 578, 145, 35, 36, 39, 34, 349, 47, 4, 4]}
- 20 101: {'quality': 8447433334444, 'levels': [189, 148, 247, 578, 145, 35, 36, 39, 34, 49, 47, 47, 4]}
- 25 323: {'quality': 7141611995448, 'levels': [579, 15, 247, 18, 167, 15, 13, 49, 69, 358, 149, 46, 8]}
- 26 329: {'quality': 7141611995448, 'levels': [579, 15, 247, 18, 167, 15, 13, 49, 69, 358, 49, 46, 89]}
- 
- 29 212: {'quality': 6555555555555, 'levels': [267, 258, 157, 158, 259, 259, 357, 59, 58, 58, 5, 5, 5]}
- 30 369: {'quality': 6555555555555, 'levels': [267, 258, 157, 158, 259, 259, 257, 59, 58, 58, 5, 5, 5]}
- 31 182: {'quality': 6555555555555, 'levels': [267, 158, 157, 258, 258, 259, 59, 57, 59, 58, 58, 5, 5]}
-
- 42 248: {'quality': 5285913723855, 'levels': [258, 126, 389, 259, 89, 15, 138, 478, 26, 34, 38, 5, 5]}
- 43 327: {'quality': 5285913723855, 'levels': [258, 126, 389, 259, 89, 15, 138, 478, 26, 34, 38, 5, 5]}
- 
- 48  35: {'quality': 5119999739386, 'levels': [356, 17, 19, 69, 59, 59, 89, 178, 135, 49, 35, 789, 68]}
- 49 500: {'quality': 5119999739386, 'levels': [356, 17, 19, 69, 49, 59, 89, 178, 135, 49, 35, 789, 68]}
- 50 214: {'quality': 5119999739386, 'levels': [356, 17, 19, 69, 59, 59, 89, 178, 135, 49, 35, 789, 68]}
- 
- 52 177: {'quality': 4654112937422, 'levels': [349, 369, 456, 145, 15, 12, 26, 79, 236, 37, 247, 2, 2]}
- 53 307: {'quality': 4654112937422, 'levels': [348, 369, 456, 145, 15, 12, 26, 79, 236, 37, 247, 2, 2]}
- 60 486: {'quality': 2999475311113, 'levels': [128, 29, 69, 79, 146, 679, 157, 235, 16, 17, 16, 19, 3]}
- 61 143: {'quality': 2999475311113, 'levels': [128, 29, 69, 39, 146, 679, 157, 235, 16, 17, 16, 19, 3]}
- 63 403: {'quality': 2637777555553, 'levels': [128, 469, 235, 27, 17, 47, 17, 357, 156, 25, 45, 15, 3]}
- 64 159: {'quality': 2637777555553, 'levels': [128, 469, 235, 27, 17, 47, 17, 357, 15, 25, 45, 15, 35]}"""
     my_sort = []
     ecd_data = ecd_input['3'].splitlines()
-    swords = {}
+    swords = []
     for x in ecd_data:
         id, x = x.split(':')
         x= x.split(',')
         x = [int(num) for num in x]
-        swords[int(id)] = _cal_strength(x)
-    sorted_items = sorted(swords.items(), key=lambda item: item[1]['quality'])
-    for s in sorted_items:
-        if not my_sort:
-            my_sort.append(s[0])
-            continue
-        for i, t in enumerate(my_sort):
-            if s[0] in my_sort:
-                break
-            if swords[s[0]]['quality'] == swords[t]['quality']:
-                # same quality, check levels
-                for l in range(len(swords[s[0]]['levels'])):
-                    if swords[s[0]]['levels'][l] > swords[t]['levels'][l]:
-                        my_sort.insert(i, s[0])
+        s = _cal_strength(x)
+        s['id'] = int(id)
+        swords.append(s)
+
+    fully_sorted = False
+    while not fully_sorted:
+        fully_sorted = True
+        for x in range(1, len(swords)):
+            prev = swords[x - 1]
+            curr = swords[x]
+            if curr['quality'] > prev['quality']:
+                # current sword is stronger, swap
+                swords[x - 1], swords[x] = swords[x], swords[x - 1]
+                fully_sorted = False
+                continue
+            elif curr['quality'] == prev['quality']:
+                levels_equal = True
+                for l in range(len(curr['levels'])):
+                    if curr['levels'][l] > prev['levels'][l]:
+                        # current sword is stronger, swap
+                        swords[x - 1], swords[x] = swords[x], swords[x - 1]
+                        fully_sorted = False
+                        levels_equal = False
                         break
-                    elif swords[s[0]]['levels'][l] < swords[t]['levels'][l]:
-                        my_sort.insert(i+1, s[0])
+                    if curr['levels'][l] != prev['levels'][l]:
+                        levels_equal = False
                         break
-                my_sort.insert(i, s[0])
-                break
-            elif swords[s[0]]['quality'] > swords[t]['quality']:
-                my_sort.insert(i, s[0])
-                break
-            elif swords[s[0]]['quality'] < swords[t]['quality']:
-                my_sort.insert(i+1, s[0])
-                break
-    for index, val in enumerate(my_sort):
-        p3 += val * (index + 1)
-        print_it=False
-        if index != 0:
-            if swords[val]['quality'] == swords[my_sort[index - 1]]['quality']:
-                print_it=True
-        if index + 1 < len(my_sort):
-            if swords[val]['quality'] == swords[my_sort[index + 1]]['quality']:
-                print_it=True
-        if print_it:
-            print(f'{index:>3} {val:>3}: {swords[val]}')
+                if not fully_sorted:
+                    continue
+                elif levels_equal:
+                    if curr['id'] > prev['id']:
+                        # current sword is stronger, swap
+                        swords[x - 1], swords[x] = swords[x], swords[x - 1]
+                        fully_sorted = False
+                        continue
+    
+    for idx, s in enumerate(swords):
+        p3 += s['id'] * (idx + 1)
+    
     # p3 = max(swords) - min(swords)
     print(f'P1: {p1}, P2: {p2}, P3: {p3} in {time.time() - start_time} seconds.')
     
