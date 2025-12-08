@@ -10,9 +10,9 @@ import time
 
 
 def main():
-    # # # # # # # # # # # #
-    # Day 7: Laboratories #
-    # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # #
+    # --- Day 7: Laboratories --- #
+    # # # # # # # # # # # # # # # #
 
     # load sample data, copied and pasted from the site into list.
     # Each list item is one line of input
