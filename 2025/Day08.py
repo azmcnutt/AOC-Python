@@ -91,6 +91,7 @@ def main():
                     junctions[indx].append(point2)
                     wired.append(point2)
                     count += 1
+                    p2 = c
                     break
         elif point1 not in wired and point2 in wired:
             # Find the p2 junction and add p1
@@ -99,6 +100,7 @@ def main():
                     junctions[indx].append(point1)
                     wired.append(point1)
                     count += 1
+                    p2 = c
                     break
         elif point1 in wired and point2 in wired:
             p1_indx = -2
@@ -108,6 +110,7 @@ def main():
                     # Do Nothing
                     p1_indx = -1
                     p2_indx = -1
+                    count += 1
                     break
                 elif point1 in p:
                     p1_indx = indx
@@ -126,14 +129,15 @@ def main():
         else:
             # we should not get here either
             print('I dont know what happened.')
-        if count >= 999:
-            break
-    junction_lens = []
-    for j in junctions:
-        junction_lens.append(len(j))
-    junction_lens.sort(reverse=True)
-    for indx in range(3):
-        p1 *= junction_lens[indx]
+        if count == 1000:
+            junction_lens = []
+            for j in junctions:
+                junction_lens.append(len(j))
+            junction_lens.sort(reverse=True)
+            for indx in range(3):
+                p1 *= junction_lens[indx]
+    
+    p2 = p2[0][0] * p2[1][0]
     
     print(f'P1: {p1}, P2: {p2} in {time.time() - start_time} seconds.')
 
