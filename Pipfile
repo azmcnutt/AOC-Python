@@ -9,6 +9,7 @@ everybody-codes-data = "*"
 browser-cookie3 = "*"
 tqdm = "*"
 numpy = "*"
+scipy = "*"
 
 [dev-packages]
 pylint = "*"
