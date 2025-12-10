@@ -11,6 +11,12 @@ import math
 from pprint import pprint
 import numpy as np
 from scipy.spatial import ConvexHull
+from shapely.geometry import Point, Polygon, MultiPoint
+
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+RESET = '\033[0m'
 
 
 def main():
@@ -27,7 +33,9 @@ def main():
 9,5
 2,5
 2,3
-7,3""".splitlines()
+7,3
+9,3
+7,1""".splitlines()
     
     # once the test data provides the right answer:
     # replace test data with data from the puzzle input
@@ -40,7 +48,7 @@ def main():
     # the speed of my program, not the speed of my Internet connection.
     start_time = time.time()
 
-    p1 = 1
+    p1 = 0
     p2 = 0
 
     ul_dist = math.inf
@@ -85,22 +93,72 @@ def main():
     # if calc_area(ll_point, lr_point) > p1:
     #     p1 = calc_area(ll_point, lr_point)
 
-    hull = ConvexHull(points)
+    # hull = ConvexHull(points)
     # hull = [(int(x[0]), int(x[1])) for x in hull.points]
+    # hull = Polygon(hull)
 
-    # for indx, point1 in enumerate(points[:-1]):
-    #     for point2 in (points[indx+1:]):
-    #         x = calc_area(point1, point2)
-    #         if x > p1:
-    #             p1 = x
-    #         if x > p2:
-    #             if (is_point_in_hull(point1, hull) 
-    #                 and is_point_in_hull(point2, hull)
-    #                 and is_point_in_hull((point1[0], point2[1]), hull)
-    #                 and is_point_in_hull((point2[0], point1[1]), hull)):
-    #                 p2 = x
+    #9,5
+    # print(points)
+    mp = MultiPoint(points)
+    test = mp.convex_hull
+    hull = Polygon(points)
+    print(hull.exterior.coords[:])
 
+    for indx, point1 in enumerate(points):
+        for point2 in points:
+            x = calc_area(point1, point2)
+            if x > p1:
+                p1 = x
+            if x > p2:
+                if (hull.intersects(Point(point1)) 
+                    and hull.intersects(Point(point2))
+                    and hull.intersects(Point((point1[0], point2[1])))
+                    and hull.intersects(Point((point2[0], point1[1])))):
+                    p2 = x
 
+    test_points = [
+        [False, (0, 0)],
+        [False, (7, 0)],
+        [True, (7, 1)],
+        [True, (7, 2)],
+        [True, (7, 3)],
+        [True, (7, 4)],
+        [False, (1, 3)],
+        [True, Point(2, 3)],
+        [True, Point(3, 3)],
+        [False, Point(1, 4)],
+        [True, Point(2, 4)],
+        [True, Point(3, 4)],
+        [True, Point(3, 5)],
+        [True, Point(2, 5)],
+        [False, Point(3, 6)],
+        [True, Point(8, 5)],
+        [True, Point(9, 5)],
+        [True, Point(10, 5)],
+        [True, Point(8, 4)],
+        [True, Point(8, 5)],
+        [False, Point(4, 6)],
+        [False, Point(5, 6)],
+        [False, Point(6, 6)],
+        [False, Point(7, 6)],
+        [False, Point(8, 6)],
+        [False, Point(8, 7)],
+        [False, Point(11, 0)],
+        [True, Point(11, 1)],
+        [True, Point(11, 2)],
+        [True, Point(10, 2)],
+        [False, Point(12, 0)],
+        [False, Point(12, 1)],
+        [False, Point(12, 2)],
+        [False, Point(12, 7)],
+        [False, Point(12, 8)],
+    ]
+    for x in test_points:
+        ret = hull.intersects(x[1])
+        if (bool(ret) != bool(x[0])):
+            print(RED, end='')
+        print(f'{x[0]} : {ret} - {x[1]}')
+        print(RESET, end='')
     
     print(f'P1: {p1}, P2: {p2} in {time.time() - start_time} seconds.')
 
@@ -139,6 +197,7 @@ def is_point_in_polygon(point, polygon):
         p1x, p1y = p2x, p2y
 
     return inside
+
 def is_point_in_hull(point, hull, tolerance=1e-12):
     """
     Checks if a point is within or on the boundary of a convex hull.
@@ -155,7 +214,6 @@ def is_point_in_hull(point, hull, tolerance=1e-12):
     # The equation is of the form: normal_vector . point + offset <= 0
     # where normal_vector is hull.equations[:, :-1] and offset is hull.equations[:, -1]
     return np.all(np.dot(hull.equations[:, :-1], point) + hull.equations[:, -1] <= tolerance)
-
 
 if __name__ == '__main__':
     main()

@@ -10,6 +10,7 @@ browser-cookie3 = "*"
 tqdm = "*"
 numpy = "*"
 scipy = "*"
+shapely = "*"
 
 [dev-packages]
 pylint = "*"
