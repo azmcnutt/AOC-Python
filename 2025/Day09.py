@@ -1,6 +1,6 @@
 # import os
 # import sys
-# import copy
+import copy
 # from pprint import pprint
 # from functools import cache
 from aocd import get_data
@@ -33,15 +33,14 @@ def main():
 9,5
 2,5
 2,3
-7,3
-9,3
-7,1""".splitlines()
+7,3""".splitlines()
     
     # once the test data provides the right answer:
     # replace test data with data from the puzzle input
-    # aoc_input = get_data(day=9, year=2025).splitlines()
+    aoc_input = get_data(day=9, year=2025).splitlines()
     # too high 4598136816
     #          4672413798
+    # Not Right 4598136816
     
     # Get the time to see how fast the solution runs.
     # I get the time after the input has been downloaded to test
@@ -62,6 +61,7 @@ def main():
     points = []
     mx = 0
     my = 0
+
     
     for p in aoc_input:
         p = [int(x) for x in p.split(',')]
@@ -71,6 +71,25 @@ def main():
         if p[1] > my:
             my = p[1]
     
+    points.append(points[0])
+    path = []
+    for indx, p in enumerate(points[:-1]):
+        pt1 = p
+        pt2  = points[indx + 1]
+        step = 1
+        if pt1[0] == pt2[0]:
+            if pt1[1] > pt2[1]:
+                step = -1
+            for y in range(pt1[1], pt2[1], step):
+                path.append((pt1[0], y))
+        else:
+            if pt1[0] > pt2[0]:
+                step = -1
+            for x in range(pt1[0], pt2[0], step):
+                path.append((x, pt1[1]))
+    
+    path.append(points.pop())
+
     # for p in points:
     #     ul = math.dist((0,0), p)
     #     ur = math.dist((mx, 0), p)
@@ -99,103 +118,93 @@ def main():
 
     #9,5
     # print(points)
-    mp = MultiPoint(points)
-    test = mp.convex_hull
-    hull = Polygon(points)
-    print(hull.exterior.coords[:])
+    # mp = MultiPoint(points)
+    # test = mp.convex_hull
+    hull = Polygon(path)
+    # print(hull.exterior.coords[:])
+    
 
-    for indx, point1 in enumerate(points):
-        for point2 in points:
+    for indx, point1 in enumerate(points[:-1]):
+        for point2 in points[indx + 1:]:
             x = calc_area(point1, point2)
             if x > p1:
                 p1 = x
             if x > p2:
-                if (hull.intersects(Point(point1)) 
-                    and hull.intersects(Point(point2))
-                    and hull.intersects(Point((point1[0], point2[1])))
-                    and hull.intersects(Point((point2[0], point1[1])))):
+                # if (is_point_in_polygon(point1, points, path) 
+                #     and is_point_in_polygon((point2), points, path)
+                #     and is_point_in_polygon((point1[0], point2[1]), points, path)
+                #     and is_point_in_polygon((point2[0], point1[1]), points, path)):
+                if (hull.covers(Point(point1)) 
+                    and hull.covers(Point(point1))
+                    and hull.covers(Point(point1[0], point2[1]))
+                    and hull.covers(Point(point2[0], point1[1]))):
                     p2 = x
 
-    test_points = [
-        [False, (0, 0)],
-        [False, (7, 0)],
-        [True, (7, 1)],
-        [True, (7, 2)],
-        [True, (7, 3)],
-        [True, (7, 4)],
-        [False, (1, 3)],
-        [True, Point(2, 3)],
-        [True, Point(3, 3)],
-        [False, Point(1, 4)],
-        [True, Point(2, 4)],
-        [True, Point(3, 4)],
-        [True, Point(3, 5)],
-        [True, Point(2, 5)],
-        [False, Point(3, 6)],
-        [True, Point(8, 5)],
-        [True, Point(9, 5)],
-        [True, Point(10, 5)],
-        [True, Point(8, 4)],
-        [True, Point(8, 5)],
-        [False, Point(4, 6)],
-        [False, Point(5, 6)],
-        [False, Point(6, 6)],
-        [False, Point(7, 6)],
-        [False, Point(8, 6)],
-        [False, Point(8, 7)],
-        [False, Point(11, 0)],
-        [True, Point(11, 1)],
-        [True, Point(11, 2)],
-        [True, Point(10, 2)],
-        [False, Point(12, 0)],
-        [False, Point(12, 1)],
-        [False, Point(12, 2)],
-        [False, Point(12, 7)],
-        [False, Point(12, 8)],
-    ]
-    for x in test_points:
-        ret = hull.intersects(x[1])
-        if (bool(ret) != bool(x[0])):
-            print(RED, end='')
-        print(f'{x[0]} : {ret} - {x[1]}')
-        print(RESET, end='')
+    # test_points = [
+    #     [False, Point(0, 0)],
+    #     [False, Point(7, 0)],
+    #     [True, Point(7, 1)],
+    #     [True, Point(7, 2)],
+    #     [True, Point(7, 3)],
+    #     [True, Point(7, 4)],
+    #     [False, Point(1, 3)],
+    #     [True, Point(2, 3)],
+    #     [True, Point(3, 3)],
+    #     [False, Point(1, 4)],
+    #     [True, Point(2, 4)],
+    #     [True, Point(3, 4)],
+    #     [True, Point(3, 5)],
+    #     [True, Point(2, 5)],
+    #     [False, Point(3, 6)],
+    #     [True, Point(8, 5)],
+    #     [True, Point(9, 5)],
+    #     [True, Point(10, 5)],
+    #     [True, Point(8, 4)],
+    #     [True, Point(8, 5)],
+    #     [False, Point(4, 6)],
+    #     [False, Point(5, 6)],
+    #     [False, Point(6, 6)],
+    #     [False, Point(7, 6)],
+    #     [False, Point(8, 6)],
+    #     [False, Point(8, 7)],
+    #     [False, Point(11, 0)],
+    #     [True, Point(11, 1)],
+    #     [True, Point(11, 2)],
+    #     [True, Point(10, 2)],
+    #     [False, Point(12, 0)],
+    #     [False, Point(12, 1)],
+    #     [False, Point(12, 2)],
+    #     [False, Point(12, 7)],
+    #     [False, Point(12, 8)],
+    # ]
+    # for x in test_points:
+    #     ret = hull.covers(x[1])
+    #     if (bool(ret) != bool(x[0])):
+    #         print(RED, end='')
+    #     print(f'{x[0]} : {ret} - {x[1]}')
+    #     print(RESET, end='')
     
     print(f'P1: {p1}, P2: {p2} in {time.time() - start_time} seconds.')
 
 def calc_area(p1, p2):
     return (abs(p1[0] - p2[0]) + 1) * (abs(p1[1] - p2[1]) + 1)
 
-def is_point_in_polygon(point, polygon):
-    """
-    Determines if a point is inside an irregular polygon using the ray casting algorithm.
-
-    Args:
-        point (tuple): A tuple (x, y) representing the coordinates of the point.
-        polygon (list): A list of tuples, where each tuple (x, y) represents a vertex
-                        of the polygon in sequential order.
-
-    Returns:
-        bool: True if the point is inside the polygon, False otherwise.
-    """
+def is_point_in_polygon(point, polygon, path):
+    if point in path:
+        return True
     x, y = point
-    num_vertices = len(polygon)
+    n = len(polygon)
     inside = False
+    p1x, p1y = polygon[0]
 
-    # Start with the last vertex as the first point of the current edge
-    p1x, p1y = polygon[num_vertices - 1]
-
-    for i in range(num_vertices):
-        p2x, p2y = polygon[i]
-
-        # Check if the ray from the point intersects the current edge
-        if point in polygon:
-            return True
-        if ((p1y <= y and p2y > y) or (p1y > y and p2y <= y)) and \
-           (x < (p2x - p1x) * (y - p1y) / (p2y - p1y) + p1x):
-            inside = not inside
-
+    for i in range(n + 1):
+        p2x, p2y = polygon[i % n]
+        if y > min(p1y, p2y) and y <= max(p1y, p2y) and x <= max(p1x, p2x):
+            if p1y != p2y:
+                xints = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                if p1x == p2x or x <= xints:
+                    inside = not inside
         p1x, p1y = p2x, p2y
-
     return inside
 
 def is_point_in_hull(point, hull, tolerance=1e-12):
